@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "905197285217",
+    "firebase_url": "https://indrek-project-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "indrek-project",
+    "storage_bucket": "indrek-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:905197285217:android:6eefbbe7bc753bb0a55f20",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7NsGz3ddH9BdjfkvyyWPLToaOOv5SnEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

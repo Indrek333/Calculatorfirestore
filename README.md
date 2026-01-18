@@ -18,6 +18,25 @@ requires the Google Services Gradle plugin plus a valid `google-services.json`
 file to generate the `values.xml` resources consumed by Firebase Core. If you
 prefer the native configuration route, `Firebase.initializeApp()` will fall back
 to platform config when `firebase_options.dart` is not populated.
+Web nõuab alati `firebase_options.dart` faili, sest brauseris ei ole
+platvormipõhist konfiguratsiooni, millest vaikekonfiguratsiooni võtta.
+
+## Firebase emulator setup
+
+The app can connect to Firebase Auth and Firestore emulators when built with
+`--dart-define=USE_FIREBASE_EMULATOR=true`. The emulator host defaults to
+`localhost` for web and `10.0.2.2` for Android emulators. Start your Firebase
+emulators (Auth on `9099`, Firestore on `8080`) before running the app:
+
+```bash
+firebase emulators:start --only auth,firestore
+```
+
+Then launch the app with:
+
+```bash
+flutter run --dart-define=USE_FIREBASE_EMULATOR=true
+```
 
 ## Getting Started
 

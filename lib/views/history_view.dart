@@ -1,78 +1,75 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../models/history_item.dart';
-import '../controllers/history_controller.dart';
 
-class HistoryView extends StatefulWidget {
+class HistoryView extends StatelessWidget {
   const HistoryView({super.key});
 
-  @override
-  State<HistoryView> createState() => _HistoryViewState();
-}
-
-class _HistoryViewState extends State<HistoryView> {
-  late final HistoryController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = HistoryController();
+  Future<void> _clearHistory() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final collection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('history');
+      final snapshot = await collection.get();
+      for (final doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Ajalugu'),
+        title: const Text('History'),
         actions: [
           IconButton(
-            tooltip: 'Kustuta ajalugu',
-            onPressed: () async {
-              await _controller.clear();
-              setState(() {});
-            },
-            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Clear History',
+            icon: const Icon(Icons.delete),
+            onPressed: _clearHistory,
           ),
         ],
       ),
-      body: FutureBuilder<List<HistoryItem>>(
-        future: _controller.getHistory(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final items = snapshot.data ?? [];
+      body: user == null
+          ? const Center(child: Text('Please log in to see your history.'))
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('history')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No history yet.'));
+                }
 
-          if (items.isEmpty) {
-            return const Center(
-              child: Text(
-                'Ajalugu on tühi.',
-                style: TextStyle(color: Colors.black),
-              ),
-            );
-          }
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = snapshot.data!.docs[index];
+                    final expression = doc['expression'] as String;
+                    final result = doc['result'] as num;
+                    final timestamp = doc['timestamp'] as Timestamp?;
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const Divider(height: 12, color: Colors.black12),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ListTile(
-                leading: const Icon(Icons.history, color: Colors.black),
-                title: Text(
-                  item.expression,
-                  style: const TextStyle(color: Colors.black),
-                ),
-                subtitle: Text(
-                  item.timestamp,
-                  style: const TextStyle(color: Colors.black54),
-                ),
-              );
-            },
-          );
-        },
-      ),
+                    return ListTile(
+                      title: Text('$expression = $result'),
+                      subtitle: Text(timestamp?.toDate().toString() ?? ''),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }

@@ -1,17 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'converter_view.dart';
-import 'history_view.dart';
+import '../views/converter_view.dart';
+import '../views/history_view.dart';
 import '../models/calculator_model.dart';
 import '../controllers/calculator_controller.dart';
 
-class CalculatorView extends StatefulWidget {
-  const CalculatorView({super.key});
+class CalculatorScreen extends StatefulWidget {
+  const CalculatorScreen({super.key});
 
   @override
-  State<CalculatorView> createState() => _CalculatorViewState();
+  State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
-class _CalculatorViewState extends State<CalculatorView> {
+class _CalculatorScreenState extends State<CalculatorScreen> {
   late final CalculatorModel _model;
   late final CalculatorController _controller;
 
@@ -69,6 +70,13 @@ class _CalculatorViewState extends State<CalculatorView> {
                 context,
                 MaterialPageRoute(builder: (_) => const HistoryView()),
               );
+            },
+          ),
+          IconButton(
+            tooltip: 'Logi välja',
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
             },
           ),
         ],

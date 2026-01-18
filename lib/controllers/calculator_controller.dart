@@ -1,14 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/calculator_model.dart';
-import '../models/history_item.dart';
-import '../utils/time_format.dart';
-import 'history_controller.dart';
 
 class CalculatorController {
   final CalculatorModel model;
-  final HistoryController historyController;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  CalculatorController(this.model, {HistoryController? historyController})
-      : historyController = historyController ?? HistoryController();
+  CalculatorController(this.model);
 
   Future<void> calculateExpression(String expression) async {
     model.error = null;
@@ -28,14 +27,18 @@ class CalculatorController {
 
     model.result = result;
 
-    final historyExpression = '${_formatExpression(trimmed)} = ${_pretty(result)}';
-    final timestamp = formatTimestamp(DateTime.now());
-
-    try {
-      await historyController.addHistoryItem(
-        HistoryItem(expression: historyExpression, timestamp: timestamp),
-      );
-    } catch (_) {}
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
+        await _firestore.collection('users').doc(user.uid).collection('history').add({
+          'expression': trimmed,
+          'result': result,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        // Handle Firestore error
+      }
+    }
   }
 
   String getResultText() {
@@ -241,10 +244,6 @@ class CalculatorController {
 
   int _precedence(String operator) {
     return operator == '*' || operator == '/' ? 2 : 1;
-  }
-
-  String _formatExpression(String expression) {
-    return expression.replaceAll(RegExp(r'\s+'), '');
   }
 
   String _pretty(double value) {
