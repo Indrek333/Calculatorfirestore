@@ -1,12 +1,12 @@
-import '../data/history_db.dart';
+import '../data/history_store.dart';
 import '../models/history_item.dart';
 
 class HistoryController {
-  final HistoryDb _db = HistoryDb.instance;
+  final HistoryStore _store = HistoryStore();
 
-  Future<List<HistoryItem>> getHistory() => _db.getAll();
+  Future<List<HistoryItem>> getHistory() => _store.getAll();
 
-  Future<void> addHistoryItem(HistoryItem item) => _db.insert(item);
+  Future<void> addHistoryItem(HistoryItem item) => _store.add(item);
 
-  Future<void> clear() => _db.clear();
+  Future<void> clear() => _store.clear();
 }
