@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'views/calculator_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  final options = DefaultFirebaseOptions.currentPlatform;
+  if (options == null) {
+    await Firebase.initializeApp();
+  } else {
+    await Firebase.initializeApp(options: options);
+  }
   runApp(const CalculatorApp());
 }
 
